@@ -7,5 +7,11 @@ class CreateTaskForm(FlaskForm):
     date = DateField('Дедлайн', validators=[DataRequired()])
     submit = SubmitField('Добавить задачу')
 
-class DeleteTaskForm(FlaskForm):
+class StatusDoneForm(FlaskForm):
     submit = SubmitField('Сделано')
+
+class StatusNotDoneForm(FlaskForm):
+    submit = SubmitField('Не сделано')
+    
+class DeleteTaskForm(FlaskForm):
+    submit = SubmitField('Удалить')
