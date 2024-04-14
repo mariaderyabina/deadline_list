@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Добавление задач</h1>
+    <form action="{{ url_for('create') }}" method="post">
+        {{ create_form.hidden_tag() }}
+        <p>{{ create_form.task.label }}<br>{{ create_form.task(size=52) }}</p>        
+        {% for error in create_form.task.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+        <p>{{ create_form.date.label }}<br>{{ create_form.date(size=32) }}</p>        
+        {% for error in create_form.date.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+        <p>{{ create_form.submit() }}</p>
+    </form>
+        <p><b>Список задач:</b></p>
+        {% for task in deadline_list %}
+            <li>{{ task.task }} | дней до дедлайна: {{ (task.date.date() - today).days }} | 
+            {% if task.is_done == False %}
+            <span style="background-color:#dd2c70">Не сделано</span>
+            {% else %}
+            <span style="background-color:#37ce37">Сделано!</span>
+            {% endif %}
+            </li>
+            <form action="{{ url_for('delete', id=task.id) }}" method="post">
+                {{ delete_form.hidden_tag() }}
+                <p>{{ delete_form.submit() }}</p>
+            </form>        
+        {% endfor %}
+{% endblock %}
