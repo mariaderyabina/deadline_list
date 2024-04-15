@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <h2>Пользователь: {{ current_user.username }}</h2>
     <h1>Добавление задач</h1>
     <form action="{{ url_for('create') }}" method="post">
         {{ create_form.hidden_tag() }}

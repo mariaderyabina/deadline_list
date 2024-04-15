@@ -1,19 +1,23 @@
 from app import app
 from flask import render_template, flash, redirect, url_for, request
-from app.forms import CreateTaskForm, StatusDoneForm, StatusNotDoneForm, DeleteTaskForm
+from app.forms import CreateTaskForm, StatusDoneForm, StatusNotDoneForm, DeleteTaskForm, LoginForm, RegistrationForm
+from flask_login import current_user, login_user, logout_user, login_required
 import datetime
 import sqlalchemy as sa
 from app import db
-from app.models import Task
+from app.models import Task, User
+from urllib.parse import urlsplit
 
 @app.route('/')
+@login_required
 def home():
     create_form = CreateTaskForm()
     status_done_form = StatusDoneForm()
     status_not_done_form = StatusNotDoneForm()
     delete_form = DeleteTaskForm()
     today = datetime.date.today()
-    deadline_list = db.session.scalars(sa.select(Task).order_by(Task.date)).all()
+    deadline_list = db.session.scalars(sa.select(Task).where(Task.user_id==current_user.id).order_by(Task.date)).all()
+    #deadline_list = db.session.scalars(current_user.tasks.select())
     return render_template('deadline_list.html', title='Deadline List', create_form=create_form, status_done_form=status_done_form, status_not_done_form=status_not_done_form, delete_form=delete_form, deadline_list=deadline_list, today=today)
 
 @app.route('/create', methods=['POST'])
@@ -21,7 +25,7 @@ def create():
     create_form = CreateTaskForm()
     if create_form.validate_on_submit():
         # добавить задачу
-        task = Task(task=create_form.task.data, date=create_form.date.data)
+        task = Task(task=create_form.task.data, date=create_form.date.data, user_id=current_user.id)
         db.session.add(task)
         db.session.commit()
     today = datetime.date.today()
@@ -60,3 +64,41 @@ def delete(id):
     today = datetime.date.today()
     deadline_list = db.session.scalars(sa.select(Task).order_by(Task.date)).all()
     return redirect(url_for('home'))
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = db.session.scalar(
+            sa.select(User).where(User.username == form.username.data))
+        if user is None or not user.check_password(form.password.data):
+            flash('Неправильное имя пользователя или пароль')
+            return redirect(url_for('login'))        
+        login_user(user, remember=form.remember_me.data)
+        next_page = request.args.get('next')
+        if not next_page or urlsplit(next_page).netloc != '':
+            next_page = url_for('home')
+        return redirect(next_page)
+    return render_template('login.html', title='Вход', form=form)
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Поздравляю, вы зарегистрированы!')
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Регистрация', form=form)

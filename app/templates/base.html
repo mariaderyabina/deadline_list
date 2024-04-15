@@ -17,7 +17,12 @@
             {% endfor %}
         </ul>
         {% endif %}
-        {% endwith %}
+        {% endwith %}    
+        <div>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('logout')}}">Выйти</a>
+            {% endif %}
+        </div> 
         {% block content %}{% endblock %}
     </body>
 </html>
