@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Пользователь: {{ current_user.username }}</h2>
+    <div class="p-3">
     <h1>Добавление задач</h1>
     <form action="{{ url_for('create') }}" method="post">
         {{ create_form.hidden_tag() }}
@@ -16,32 +16,33 @@
         <p>{{ create_form.submit() }}</p>
     </form>
         <p><b>Список задач:</b></p>
-        {% for task in deadline_list %}
-            <li><span
-                    {% if task.is_done %} 
-                        style="background-color:#88f17a" 
-                    {% elif (task.date.date() - today).days <= 3 %} 
-                        style="background-color:#ec7e84" 
-                    {% elif (task.date.date() - today).days <= 7 %}
-                        style="background-color:#f7b680"
-                    {% else %}
-                        style="background-color:#fff89a"
-                    {% endif %}>
-                    {{ task.task }} | дедлайн: {{ task.date.date() }} | дней до дедлайна: {{ (task.date.date() - today).days }}</span>
-            </li>
-            <p>
-            <form action="{{ url_for('done', id=task.id) }}" method="post" style="display: inline;">
-                {{ status_done_form.hidden_tag() }}
-                {{ status_done_form.submit() }}
-            </form>
-            <form action="{{ url_for('not_done', id=task.id) }}" method="post" style="display: inline;">
-                {{ status_done_form.hidden_tag() }}
-                {{ status_not_done_form.submit() }}
-            </form>   
-            <form action="{{ url_for('delete', id=task.id) }}" method="post" style="display: inline;">
-                {{ status_done_form.hidden_tag() }}
-                {{ delete_form.submit() }}
-            </form>        
-            </p>
-        {% endfor %}
+            {% for task in deadline_list %}
+                {% if task.is_done %} 
+                {% set color_group="list-group-item list-group-item-success" %} 
+                {% elif (task.date.date() - today).days <= 3 %} 
+                {% set color_group="list-group-item list-group-item-danger" %} 
+                {% elif (task.date.date() - today).days <= 7 %}
+                {% set color_group="list-group-item list-group-item-warning" %} 
+                {% else %}
+                {% set color_group="list-group-item list-group-item-primary" %} 
+                {% endif %}
+                <ul class="list-group">
+                    <li class="{{ color_group }}">{{ task.task }} | дедлайн: {{ task.date.date() }} | дней до дедлайна: {{ (task.date.date() - today).days }}</li>
+                </ul>
+                    <p>
+                <form action="{{ url_for('done', id=task.id) }}" method="post" style="display: inline;">
+                    {{ status_done_form.hidden_tag() }}
+                    {{ status_done_form.submit() }}
+                </form>
+                <form action="{{ url_for('not_done', id=task.id) }}" method="post" style="display: inline;">
+                    {{ status_done_form.hidden_tag() }}
+                    {{ status_not_done_form.submit() }}
+                </form>   
+                <form action="{{ url_for('delete', id=task.id) }}" method="post" style="display: inline;">
+                    {{ status_done_form.hidden_tag() }}
+                    {{ delete_form.submit() }}
+                </form>        
+                </p>
+            {% endfor %}
+        </div>
 {% endblock %}
