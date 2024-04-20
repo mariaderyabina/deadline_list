@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+    <body>
+
+    <p>Привет {{ user.username }}!</p>
+
+    <p><b>Твой список дедлайнов:</b></p>
+
+    <ul>
+    {% for task in deadline_list %}
+
+        <li>{{ task.task }} | дедлайн: {{ task.date.date() }}</li>
+
+    {% endfor %}
+    </ul>
+    </body>
+</html>

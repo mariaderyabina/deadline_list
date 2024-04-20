@@ -1,12 +1,12 @@
-from app import app
+from app import app, db, mail
 from flask import render_template, flash, redirect, url_for, request
 from app.forms import CreateTaskForm, StatusDoneForm, StatusNotDoneForm, DeleteTaskForm, LoginForm, RegistrationForm
 from flask_login import current_user, login_user, logout_user, login_required
 import datetime
 import sqlalchemy as sa
-from app import db
 from app.models import Task, User
 from urllib.parse import urlsplit
+from app.email import send_deadline_list
 
 @app.route('/')
 @login_required
@@ -17,14 +17,13 @@ def home():
     delete_form = DeleteTaskForm()
     today = datetime.date.today()
     deadline_list = db.session.scalars(sa.select(Task).where(Task.user_id==current_user.id).order_by(Task.date)).all()
-    #deadline_list = db.session.scalars(current_user.tasks.select())
     return render_template('deadline_list.html', title='Deadline List', create_form=create_form, status_done_form=status_done_form, status_not_done_form=status_not_done_form, delete_form=delete_form, deadline_list=deadline_list, today=today)
 
 @app.route('/create', methods=['POST'])
+@login_required
 def create():
     create_form = CreateTaskForm()
     if create_form.validate_on_submit():
-        # добавить задачу
         task = Task(task=create_form.task.data, date=create_form.date.data, user_id=current_user.id)
         db.session.add(task)
         db.session.commit()
@@ -33,6 +32,7 @@ def create():
     return redirect(url_for('home'))
 
 @app.route('/done/<id>', methods=['POST'])
+@login_required
 def done(id):
     status_done_form = StatusDoneForm()
     if status_done_form.validate_on_submit():
@@ -44,6 +44,7 @@ def done(id):
     return redirect(url_for('home'))
 
 @app.route('/not_done/<id>', methods=['POST'])
+@login_required
 def not_done(id):
     status_not_done_form = StatusNotDoneForm() 
     if status_not_done_form.validate_on_submit():
@@ -55,6 +56,7 @@ def not_done(id):
     return redirect(url_for('home'))
 
 @app.route('/delete/<id>', methods=['POST'])
+@login_required
 def delete(id):
     delete_form = DeleteTaskForm()
     if delete_form.validate_on_submit():
@@ -102,3 +104,10 @@ def register():
         flash('Поздравляю, вы зарегистрированы!')
         return redirect(url_for('login'))
     return render_template('register.html', title='Регистрация', form=form)
+
+@login_required
+@app.route('/send_email', methods=['GET', 'POST'])
+def send_email():
+    deadline_list = db.session.scalars(sa.select(Task).where(Task.user_id==current_user.id).order_by(Task.date)).all()
+    send_deadline_list(current_user, deadline_list)
+    return redirect(url_for('home'))

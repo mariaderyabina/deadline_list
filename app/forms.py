@@ -45,3 +45,4 @@ class RegistrationForm(FlaskForm):
             User.email == email.data))
         if user:
             raise ValidationError('Пожалуйста, выберите другой email адрес')
+        

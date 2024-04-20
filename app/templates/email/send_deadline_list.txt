@@ -1,0 +1,9 @@
+Привет {{ user.username }}!
+
+Твой список дедлайнов:
+
+{% for task in deadline_list %}
+
+    {{ task.task }} | дедлайн: {{ task.date.date() }} 
+
+{% endfor %}

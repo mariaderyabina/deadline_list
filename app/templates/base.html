@@ -18,11 +18,15 @@
         </ul>
         {% endif %}
         {% endwith %}    
-        <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom p-3">
+        
+        <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+            <ul class="list-group list-group-horizontal">
             {% if current_user.is_authenticated %}
-                <span class="fs-4">Пользователь: {{ current_user.username }}</span>
-                <a href="{{ url_for('logout')}}" class="btn btn-warning">Выйти</a>
+                <li><span class="list-group-item fs-4">Пользователь: {{ current_user.username }}</span></li>
+                <li><a href="{{ url_for('send_email')}}" class="list-group-item fs-4 btn btn-warning active" aria-current="true">Отправить список на почту</a></li>
+                <li><a href="{{ url_for('logout')}}" class="list-group-item fs-4 btn btn-warning">Выйти</a></li>
             {% endif %}
+            </ul>
         </header>
         {% block content %}{% endblock %}
     </body>
